@@ -15,12 +15,12 @@
 
 ### Init Coverage
 
-- [ ] **INIT-01**: init.cjs tests for cmdInitTodos (directory reading, filtering)
-- [ ] **INIT-02**: init.cjs tests for cmdInitMilestoneOp (phase counting, completion detection)
-- [ ] **INIT-03**: init.cjs tests for cmdInitProgress phase enumeration logic
-- [ ] **INIT-04**: init.cjs tests for cmdInitPhaseOp fallback path
-- [ ] **INIT-05**: init.cjs tests for cmdInitQuick and cmdInitMapCodebase
-- [ ] **INIT-06**: init.cjs tests for cmdInitNewProject and cmdInitNewMilestone
+- [x] **INIT-01**: init.cjs tests for cmdInitTodos (directory reading, filtering)
+- [x] **INIT-02**: init.cjs tests for cmdInitMilestoneOp (phase counting, completion detection)
+- [x] **INIT-03**: init.cjs tests for cmdInitProgress phase enumeration logic
+- [x] **INIT-04**: init.cjs tests for cmdInitPhaseOp fallback path
+- [x] **INIT-05**: init.cjs tests for cmdInitQuick and cmdInitMapCodebase
+- [x] **INIT-06**: init.cjs tests for cmdInitNewProject and cmdInitNewMilestone
 
 ### State Coverage
 
@@ -72,12 +72,12 @@
 | CMD-03 | Phase 7 | Complete |
 | CMD-04 | Phase 7 | Complete |
 | CMD-05 | Phase 7 | Complete |
-| INIT-01 | Phase 8 | Pending |
-| INIT-02 | Phase 8 | Pending |
-| INIT-03 | Phase 8 | Pending |
-| INIT-04 | Phase 8 | Pending |
-| INIT-05 | Phase 8 | Pending |
-| INIT-06 | Phase 8 | Pending |
+| INIT-01 | Phase 8 | Complete |
+| INIT-02 | Phase 8 | Complete |
+| INIT-03 | Phase 8 | Complete |
+| INIT-04 | Phase 8 | Complete |
+| INIT-05 | Phase 8 | Complete |
+| INIT-06 | Phase 8 | Complete |
 | STATE-01 | Phase 9 | Pending |
 | STATE-02 | Phase 9 | Pending |
 | STATE-03 | Phase 9 | Pending |
