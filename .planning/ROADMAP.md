@@ -45,7 +45,9 @@
   3. cmdListTodos and cmdVerifyPathExists behave correctly for existing and missing paths
   4. cmdResolveModel returns expected model strings for valid and invalid inputs
   5. cmdCommit handles both clean-repo and dirty-repo git scenarios without crashing
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 07-01-PLAN.md — Utility function tests (slug, timestamp, todos, pathExists, resolveModel)
+- [ ] 07-02-PLAN.md — Complex function tests (commit with git repos, websearch with fetch mocking)
 
 ### Phase 8: init.cjs Coverage
 **Goal**: init.cjs reaches 75%+ line coverage with all init command functions tested
@@ -113,7 +115,7 @@
 | 4. config.cjs + template.cjs Tests | v1.0 | 2/2 | Complete | 2026-02-25 |
 | 5. milestone.cjs Tests | v1.0 | 2/2 | Complete | 2026-02-25 |
 | 6. CI Pipeline | v1.0 | 1/1 | Complete | 2026-02-25 |
-| 7. commands.cjs Coverage | v1.1 | 0/TBD | Not started | - |
+| 7. commands.cjs Coverage | v1.1 | 0/2 | Planned | - |
 | 8. init.cjs Coverage | v1.1 | 0/TBD | Not started | - |
 | 9. state.cjs Coverage | v1.1 | 0/TBD | Not started | - |
 | 10. gsd-tools.cjs Coverage | v1.1 | 0/TBD | Not started | - |
