@@ -59,7 +59,9 @@
   3. cmdInitMilestoneOp counts phases and detects completion from real planning directories
   4. cmdInitProgress enumerates phases and returns correct progress state
   5. cmdInitNewProject and cmdInitNewMilestone create expected file structures in temp dirs
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 08-01-PLAN.md — cmdInitTodos, cmdInitMilestoneOp, cmdInitPhaseOp fallback tests (INIT-01, INIT-02, INIT-04)
+- [ ] 08-02-PLAN.md — cmdInitProgress, cmdInitQuick, cmdInitMapCodebase, cmdInitNewProject, cmdInitNewMilestone tests (INIT-03, INIT-05, INIT-06)
 
 ### Phase 9: state.cjs Coverage
 **Goal**: state.cjs reaches 75%+ line coverage with all state management functions tested
@@ -116,7 +118,7 @@
 | 5. milestone.cjs Tests | v1.0 | 2/2 | Complete | 2026-02-25 |
 | 6. CI Pipeline | v1.0 | 1/1 | Complete | 2026-02-25 |
 | 7. commands.cjs Coverage | v1.1 | 0/2 | Planned | - |
-| 8. init.cjs Coverage | v1.1 | 0/TBD | Not started | - |
+| 8. init.cjs Coverage | v1.1 | 0/2 | Planned | - |
 | 9. state.cjs Coverage | v1.1 | 0/TBD | Not started | - |
 | 10. gsd-tools.cjs Coverage | v1.1 | 0/TBD | Not started | - |
 | 11. roadmap.cjs Coverage | v1.1 | 0/TBD | Not started | - |
