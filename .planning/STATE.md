@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 Phase: 12 of 12 (Coverage Tooling) — COMPLETE
 Plan: 12-02 complete — phase 12 done
 Status: Phase 12 complete, v1.1 milestone nearing completion
-Last activity: 2026-02-25 — Phase 12 executed: c8 coverage tooling with 70% threshold + CI enforcement (448 tests, 94.21% overall coverage)
+Last activity: 2026-02-25 — Quick task 1 executed: removed test overfitting across 5 test files (433 tests passing, 94.08% overall coverage)
 
 Progress: [████████░░] 83% (v1.1)
 
@@ -49,6 +49,7 @@ Recent decisions affecting current work:
 - [Phase 10]: summary-extract returns structured result (path, one_liner, requirements_completed), not raw frontmatter
 - [Phase 12]: c8 --all flag used to report uncovered files not imported by tests
 - [Phase 12]: Conditional CI steps via github.event_name — PRs get coverage, pushes get fast tests
+- [Quick-1]: Overfit tests deleted: schema shape assertions, per-profile lookup matrix (12 tests → 1 structural validation), hardcoded default value checks, raw URL encoding checks, midnight-fragile date snapshot
 
 ### Pending Todos
 
@@ -61,5 +62,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 12, Plan 12-02 complete — phase 12 done
+Stopped at: Quick task 1 (fix-overfitting-in-test-suite) complete
 Resume file: None
