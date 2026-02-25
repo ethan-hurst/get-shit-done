@@ -16,9 +16,9 @@
 - [x] **TEST-07**: frontmatter.cjs has tests for parseMustHavesBlock and spliceFrontmatter
 - [x] **TEST-08**: frontmatter.cjs has CLI integration tests for get/set/merge/validate commands
 - [x] **TEST-09**: verify.cjs has tests for validate-health (all 8 checks + repair)
-- [ ] **TEST-10**: verify.cjs has tests for verify plan-structure and phase-completeness
-- [ ] **TEST-11**: verify.cjs has tests for verify summary including search(-1) regression
-- [ ] **TEST-12**: verify.cjs has tests for verify references, commits, artifacts, key-links
+- [x] **TEST-10**: verify.cjs has tests for verify plan-structure and phase-completeness
+- [x] **TEST-11**: verify.cjs has tests for verify summary including search(-1) regression
+- [x] **TEST-12**: verify.cjs has tests for verify references, commits, artifacts, key-links
 
 ### Test Coverage — Medium Priority Modules
 
@@ -31,14 +31,14 @@
 
 - [x] **REG-01**: Test confirms loadConfig returns model_overrides when present
 - [x] **REG-02**: Test confirms getRoadmapPhaseInternal is exported from core.cjs
-- [ ] **REG-03**: Test confirms verify-summary handles missing self-check section correctly
+- [x] **REG-03**: Test confirms verify-summary handles missing self-check section correctly
 - [x] **REG-04**: Test confirms frontmatter inline arrays handle quoted commas
 
 ### Infrastructure
 
 - [ ] **INFRA-01**: GitHub Actions workflow runs tests on push/PR to main
 - [ ] **INFRA-02**: CI matrix covers Ubuntu, macOS, Windows x Node 18, 20, 22
-- [ ] **INFRA-03**: Test helper createTempGitProject added for git-dependent tests
+- [x] **INFRA-03**: Test helper createTempGitProject added for git-dependent tests
 
 ## v2 Requirements
 
@@ -80,11 +80,11 @@
 | TEST-08 | Phase 2 | Complete |
 | REG-04 | Phase 2 | Complete |
 | TEST-09 | Phase 3 | Complete |
-| TEST-10 | Phase 3 | Pending |
-| TEST-11 | Phase 3 | Pending |
-| TEST-12 | Phase 3 | Pending |
-| REG-03 | Phase 3 | Pending |
-| INFRA-03 | Phase 3 | Pending |
+| TEST-10 | Phase 3 | Complete |
+| TEST-11 | Phase 3 | Complete |
+| TEST-12 | Phase 3 | Complete |
+| REG-03 | Phase 3 | Complete |
+| INFRA-03 | Phase 3 | Complete |
 | TEST-13 | Phase 4 | Pending |
 | TEST-14 | Phase 4 | Pending |
 | TEST-15 | Phase 5 | Pending |
