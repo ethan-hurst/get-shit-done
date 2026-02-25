@@ -73,7 +73,10 @@ Plans:
   2. Tests exercise `config-ensure-section`, `config-set`, and `config-get` via CLI integration
   3. Tests confirm template selection heuristics choose the correct template for given inputs
   4. Tests confirm `template fill` replaces all placeholders with provided values
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — config.cjs CLI integration tests (config-ensure-section, config-set, config-get) (TEST-13)
+- [ ] 04-02-PLAN.md — template.cjs CLI integration tests (template select heuristics, template fill) (TEST-14)
 
 ### Phase 5: milestone.cjs Tests
 **Goal**: milestone.cjs tests are extended beyond 2 tests to cover archiving and all requirement ID formats
@@ -106,6 +109,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. core.cjs Tests | 2/2 | Complete | 2026-02-25 |
 | 2. frontmatter.cjs Tests | 2/2 | Complete | 2026-02-25 |
 | 3. verify.cjs Tests | 3/3 | Complete    | 2026-02-25 |
-| 4. config.cjs + template.cjs Tests | 0/TBD | Not started | - |
+| 4. config.cjs + template.cjs Tests | 0/2 | Planned | - |
 | 5. milestone.cjs Tests | 0/TBD | Not started | - |
 | 6. CI Pipeline | 0/TBD | Not started | - |
