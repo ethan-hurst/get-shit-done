@@ -60,7 +60,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. `createTempGitProject` helper is added to `tests/helpers.cjs` and used by git-dependent verify tests
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — createTempGitProject helper + verify plan-structure and phase-completeness tests (INFRA-03, TEST-10)
+- [x] 03-01-PLAN.md — createTempGitProject helper + verify plan-structure and phase-completeness tests (INFRA-03, TEST-10)
 - [ ] 03-02-PLAN.md — validate-health tests covering all 8 checks and repair path (TEST-09)
 - [ ] 03-03-PLAN.md — verify-summary, references, commits, artifacts, key-links tests (TEST-11, TEST-12, REG-03)
 
