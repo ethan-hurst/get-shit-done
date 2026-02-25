@@ -14,7 +14,7 @@
 - [x] **TEST-05**: frontmatter.cjs has tests for extractFrontmatter including quoted comma edge case
 - [x] **TEST-06**: frontmatter.cjs has tests for reconstructFrontmatter roundtrip identity
 - [x] **TEST-07**: frontmatter.cjs has tests for parseMustHavesBlock and spliceFrontmatter
-- [ ] **TEST-08**: frontmatter.cjs has CLI integration tests for get/set/merge/validate commands
+- [x] **TEST-08**: frontmatter.cjs has CLI integration tests for get/set/merge/validate commands
 - [ ] **TEST-09**: verify.cjs has tests for validate-health (all 8 checks + repair)
 - [ ] **TEST-10**: verify.cjs has tests for verify plan-structure and phase-completeness
 - [ ] **TEST-11**: verify.cjs has tests for verify summary including search(-1) regression
@@ -77,7 +77,7 @@
 | TEST-05 | Phase 2 | Complete |
 | TEST-06 | Phase 2 | Complete |
 | TEST-07 | Phase 2 | Complete |
-| TEST-08 | Phase 2 | Pending |
+| TEST-08 | Phase 2 | Complete |
 | REG-04 | Phase 2 | Complete |
 | TEST-09 | Phase 3 | Pending |
 | TEST-10 | Phase 3 | Pending |
