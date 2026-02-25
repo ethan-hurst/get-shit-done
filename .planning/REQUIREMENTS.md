@@ -24,9 +24,9 @@
 
 ### State Coverage
 
-- [ ] **STATE-01**: state.cjs tests for stateExtractField and stateReplaceField helpers
-- [ ] **STATE-02**: state.cjs tests for cmdStateLoad and cmdStateGet
-- [ ] **STATE-03**: state.cjs tests for cmdStatePatch and cmdStateUpdate
+- [x] **STATE-01**: state.cjs tests for stateExtractField and stateReplaceField helpers
+- [x] **STATE-02**: state.cjs tests for cmdStateLoad and cmdStateGet
+- [x] **STATE-03**: state.cjs tests for cmdStatePatch and cmdStateUpdate
 - [ ] **STATE-04**: state.cjs tests for cmdStateAdvancePlan
 - [ ] **STATE-05**: state.cjs tests for cmdStateRecordMetric and cmdStateUpdateProgress
 - [ ] **STATE-06**: state.cjs tests for cmdStateResolveBlocker and cmdStateRecordSession
@@ -78,9 +78,9 @@
 | INIT-04 | Phase 8 | Complete |
 | INIT-05 | Phase 8 | Complete |
 | INIT-06 | Phase 8 | Complete |
-| STATE-01 | Phase 9 | Pending |
-| STATE-02 | Phase 9 | Pending |
-| STATE-03 | Phase 9 | Pending |
+| STATE-01 | Phase 9 | Complete |
+| STATE-02 | Phase 9 | Complete |
+| STATE-03 | Phase 9 | Complete |
 | STATE-04 | Phase 9 | Pending |
 | STATE-05 | Phase 9 | Pending |
 | STATE-06 | Phase 9 | Pending |
