@@ -73,7 +73,9 @@
   3. cmdStateLoad and cmdStateGet return correct values for known STATE.md content
   4. cmdStatePatch and cmdStateUpdate modify STATE.md fields without corrupting other fields
   5. cmdStateAdvancePlan, cmdStateRecordMetric, cmdStateUpdateProgress, cmdStateResolveBlocker, and cmdStateRecordSession each update STATE.md as expected
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 09-01-PLAN.md — Helper function unit tests + load/get/patch/update CLI tests (STATE-01, STATE-02, STATE-03)
+- [ ] 09-02-PLAN.md — Advance-plan, metrics/progress, resolve-blocker, record-session CLI tests (STATE-04, STATE-05, STATE-06)
 
 ### Phase 10: gsd-tools.cjs Coverage
 **Goal**: gsd-tools.cjs dispatcher reaches 85%+ line coverage with branch and error paths tested
@@ -119,7 +121,7 @@
 | 6. CI Pipeline | v1.0 | 1/1 | Complete | 2026-02-25 |
 | 7. commands.cjs Coverage | v1.1 | 0/2 | Planned | - |
 | 8. init.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
-| 9. state.cjs Coverage | v1.1 | 0/TBD | Not started | - |
+| 9. state.cjs Coverage | v1.1 | 0/2 | Planned | - |
 | 10. gsd-tools.cjs Coverage | v1.1 | 0/TBD | Not started | - |
 | 11. roadmap.cjs Coverage | v1.1 | 0/TBD | Not started | - |
 | 12. Coverage Tooling | v1.1 | 0/TBD | Not started | - |
