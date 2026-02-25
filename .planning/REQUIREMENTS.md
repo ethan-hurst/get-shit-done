@@ -38,7 +38,7 @@
 
 ### Roadmap Coverage
 
-- [ ] **ROAD-01**: roadmap.cjs tests for uncovered analysis and parsing branches
+- [x] **ROAD-01**: roadmap.cjs tests for uncovered analysis and parsing branches
 
 ### Coverage Tooling
 
@@ -86,7 +86,7 @@
 | STATE-06 | Phase 9 | Complete |
 | DISP-01 | Phase 10 | Complete |
 | DISP-02 | Phase 10 | Complete |
-| ROAD-01 | Phase 11 | Pending |
+| ROAD-01 | Phase 11 | Complete |
 | COV-01 | Phase 12 | Complete |
 | COV-02 | Phase 12 | Complete |
 | COV-03 | Phase 12 | Complete |
