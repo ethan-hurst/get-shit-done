@@ -98,7 +98,10 @@ Plans:
   1. `npm test` runs new roadmap.cjs tests without failures
   2. Previously uncovered parsing branches produce correct output for edge-case inputs
   3. Analysis functions handle missing or malformed ROADMAP.md sections without throwing
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Analyze edge-case branches (disk status variants, milestone extraction, missing details) and get-phase success_criteria
+- [ ] 11-02-PLAN.md — cmdRoadmapUpdatePlanProgress tests (partial, complete, error paths)
 
 ### Phase 12: Coverage Tooling
 **Goal**: c8 coverage tool is integrated and CI fails if any module drops below 70% line coverage
@@ -125,5 +128,5 @@ Plans:
 | 8. init.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
 | 9. state.cjs Coverage | 2/2 | Complete    | 2026-02-25 | - |
 | 10. gsd-tools.cjs Coverage | 1/1 | Complete    | 2026-02-25 | - |
-| 11. roadmap.cjs Coverage | v1.1 | 0/TBD | Not started | - |
+| 11. roadmap.cjs Coverage | v1.1 | 0/2 | Planned | - |
 | 12. Coverage Tooling | v1.1 | 0/TBD | Not started | - |
