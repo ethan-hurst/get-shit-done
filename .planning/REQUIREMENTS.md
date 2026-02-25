@@ -42,9 +42,9 @@
 
 ### Coverage Tooling
 
-- [ ] **COV-01**: c8 added as devDependency with npm run test:coverage script
-- [ ] **COV-02**: Coverage thresholds enforced at 70%+ line coverage
-- [ ] **COV-03**: CI workflow updated to run coverage check on PR
+- [x] **COV-01**: c8 added as devDependency with npm run test:coverage script
+- [x] **COV-02**: Coverage thresholds enforced at 70%+ line coverage
+- [x] **COV-03**: CI workflow updated to run coverage check on PR
 
 ## v2 Requirements
 
@@ -87,9 +87,9 @@
 | DISP-01 | Phase 10 | Complete |
 | DISP-02 | Phase 10 | Complete |
 | ROAD-01 | Phase 11 | Pending |
-| COV-01 | Phase 12 | Pending |
-| COV-02 | Phase 12 | Pending |
-| COV-03 | Phase 12 | Pending |
+| COV-01 | Phase 12 | Complete |
+| COV-02 | Phase 12 | Complete |
+| COV-03 | Phase 12 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 23 total
