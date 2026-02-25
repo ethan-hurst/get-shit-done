@@ -25,7 +25,7 @@
 - [x] **TEST-13**: config.cjs has tests for config-ensure-section, config-set, config-get
 - [x] **TEST-14**: template.cjs has tests for template select heuristics and template fill
 - [x] **TEST-15**: milestone.cjs has extended tests for milestone complete with archiving
-- [ ] **TEST-16**: milestone.cjs has tests for requirements mark-complete with all ID formats
+- [x] **TEST-16**: milestone.cjs has tests for requirements mark-complete with all ID formats
 
 ### Bug Regressions
 
@@ -88,7 +88,7 @@
 | TEST-13 | Phase 4 | Complete |
 | TEST-14 | Phase 4 | Complete |
 | TEST-15 | Phase 5 | Complete |
-| TEST-16 | Phase 5 | Pending |
+| TEST-16 | Phase 5 | Complete |
 | INFRA-01 | Phase 6 | Pending |
 | INFRA-02 | Phase 6 | Pending |
 
