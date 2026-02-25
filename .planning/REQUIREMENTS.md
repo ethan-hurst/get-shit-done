@@ -27,9 +27,9 @@
 - [x] **STATE-01**: state.cjs tests for stateExtractField and stateReplaceField helpers
 - [x] **STATE-02**: state.cjs tests for cmdStateLoad and cmdStateGet
 - [x] **STATE-03**: state.cjs tests for cmdStatePatch and cmdStateUpdate
-- [ ] **STATE-04**: state.cjs tests for cmdStateAdvancePlan
-- [ ] **STATE-05**: state.cjs tests for cmdStateRecordMetric and cmdStateUpdateProgress
-- [ ] **STATE-06**: state.cjs tests for cmdStateResolveBlocker and cmdStateRecordSession
+- [x] **STATE-04**: state.cjs tests for cmdStateAdvancePlan
+- [x] **STATE-05**: state.cjs tests for cmdStateRecordMetric and cmdStateUpdateProgress
+- [x] **STATE-06**: state.cjs tests for cmdStateResolveBlocker and cmdStateRecordSession
 
 ### Dispatcher Coverage
 
@@ -81,9 +81,9 @@
 | STATE-01 | Phase 9 | Complete |
 | STATE-02 | Phase 9 | Complete |
 | STATE-03 | Phase 9 | Complete |
-| STATE-04 | Phase 9 | Pending |
-| STATE-05 | Phase 9 | Pending |
-| STATE-06 | Phase 9 | Pending |
+| STATE-04 | Phase 9 | Complete |
+| STATE-05 | Phase 9 | Complete |
+| STATE-06 | Phase 9 | Complete |
 | DISP-01 | Phase 10 | Pending |
 | DISP-02 | Phase 10 | Pending |
 | ROAD-01 | Phase 11 | Pending |
