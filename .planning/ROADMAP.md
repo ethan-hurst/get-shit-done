@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: core.cjs Tests** - Test the foundational module's 25 exports including known regression bugs
 - [x] **Phase 2: frontmatter.cjs Tests** - Test the hand-rolled YAML parser including quoted comma edge case
 - [x] **Phase 3: verify.cjs Tests** - Comprehensive tests for the largest gap (772 lines, only 3 tests) (completed 2026-02-25)
-- [ ] **Phase 4: config.cjs + template.cjs Tests** - Test config operations and template selection
+- [x] **Phase 4: config.cjs + template.cjs Tests** - Test config operations and template selection (completed 2026-02-25)
 - [ ] **Phase 5: milestone.cjs Tests** - Extend existing minimal coverage with archiving and ID formats
 - [ ] **Phase 6: CI Pipeline** - GitHub Actions matrix covering 3 OS × 3 Node versions
 
@@ -61,8 +61,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 Plans:
 - [x] 03-01-PLAN.md — createTempGitProject helper + verify plan-structure and phase-completeness tests (INFRA-03, TEST-10)
-- [ ] 03-02-PLAN.md — validate-health tests covering all 8 checks and repair path (TEST-09)
-- [ ] 03-03-PLAN.md — verify-summary, references, commits, artifacts, key-links tests (TEST-11, TEST-12, REG-03)
+- [x] 03-02-PLAN.md — validate-health tests covering all 8 checks and repair path (TEST-09)
+- [x] 03-03-PLAN.md — verify-summary, references, commits, artifacts, key-links tests (TEST-11, TEST-12, REG-03)
 
 ### Phase 4: config.cjs + template.cjs Tests
 **Goal**: config.cjs and template.cjs each have a test file covering their exports
@@ -75,8 +75,8 @@ Plans:
   4. Tests confirm `template fill` replaces all placeholders with provided values
 **Plans**: 2 plans
 Plans:
-- [ ] 04-01-PLAN.md — config.cjs CLI integration tests (config-ensure-section, config-set, config-get) (TEST-13)
-- [ ] 04-02-PLAN.md — template.cjs CLI integration tests (template select heuristics, template fill) (TEST-14)
+- [x] 04-01-PLAN.md — config.cjs CLI integration tests (config-ensure-section, config-set, config-get) (TEST-13)
+- [x] 04-02-PLAN.md — template.cjs CLI integration tests (template select heuristics, template fill) (TEST-14)
 
 ### Phase 5: milestone.cjs Tests
 **Goal**: milestone.cjs tests are extended beyond 2 tests to cover archiving and all requirement ID formats
@@ -109,6 +109,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. core.cjs Tests | 2/2 | Complete | 2026-02-25 |
 | 2. frontmatter.cjs Tests | 2/2 | Complete | 2026-02-25 |
 | 3. verify.cjs Tests | 3/3 | Complete    | 2026-02-25 |
-| 4. config.cjs + template.cjs Tests | 0/2 | Planned | - |
+| 4. config.cjs + template.cjs Tests | 2/2 | Complete | 2026-02-25 |
 | 5. milestone.cjs Tests | 0/TBD | Not started | - |
 | 6. CI Pipeline | 0/TBD | Not started | - |
