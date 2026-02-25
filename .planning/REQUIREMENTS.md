@@ -36,8 +36,8 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: GitHub Actions workflow runs tests on push/PR to main
-- [ ] **INFRA-02**: CI matrix covers Ubuntu, macOS, Windows x Node 18, 20, 22
+- [x] **INFRA-01**: GitHub Actions workflow runs tests on push/PR to main
+- [x] **INFRA-02**: CI matrix covers Ubuntu, macOS, Windows x Node 18, 20, 22
 - [x] **INFRA-03**: Test helper createTempGitProject added for git-dependent tests
 
 ## v2 Requirements
@@ -89,8 +89,8 @@
 | TEST-14 | Phase 4 | Complete |
 | TEST-15 | Phase 5 | Complete |
 | TEST-16 | Phase 5 | Complete |
-| INFRA-01 | Phase 6 | Pending |
-| INFRA-02 | Phase 6 | Pending |
+| INFRA-01 | Phase 6 | Complete |
+| INFRA-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total
