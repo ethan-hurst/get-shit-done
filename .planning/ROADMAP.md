@@ -133,4 +133,4 @@ Plans:
 | 10. gsd-tools.cjs Coverage | v1.1 | 1/1 | Complete | 2026-02-25 |
 | 11. roadmap.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
 | 12. Coverage Tooling | v1.1 | 2/2 | Complete | 2026-02-25 |
-| 13. Verification & Milestone Cleanup | v1.1 | 4/4 | Complete | 2026-02-25 |
+| 13. Verification & Milestone Cleanup | v1.1 | Complete    | 2026-02-25 | 2026-02-25 |
