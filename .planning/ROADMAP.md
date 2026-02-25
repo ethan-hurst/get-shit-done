@@ -26,7 +26,7 @@
 
 **Milestone Goal:** Bring all under-covered modules to 75%+ line coverage and enforce thresholds in CI
 
-- [ ] **Phase 7: commands.cjs Coverage** - Bring commands.cjs from 59% to 75%+ via 5 targeted test groups
+- [x] **Phase 7: commands.cjs Coverage** - Bring commands.cjs from 59% to 75%+ via 5 targeted test groups (completed 2026-02-25)
 - [x] **Phase 8: init.cjs Coverage** - Bring init.cjs from 42% to 75%+ via 6 targeted test groups
 - [x] **Phase 9: state.cjs Coverage** - Bring state.cjs from 40% to 75%+ via 6 targeted test groups (completed 2026-02-25)
 - [x] **Phase 10: gsd-tools.cjs Coverage** - Bring dispatcher from 76% to 85%+ via error and branch tests (completed 2026-02-25)
@@ -46,8 +46,8 @@
   4. cmdResolveModel returns expected model strings for valid and invalid inputs
   5. cmdCommit handles both clean-repo and dirty-repo git scenarios without crashing
 **Plans**: 2 plans
-- [ ] 07-01-PLAN.md — Utility function tests (slug, timestamp, todos, pathExists, resolveModel)
-- [ ] 07-02-PLAN.md — Complex function tests (commit with git repos, websearch with fetch mocking)
+- [x] 07-01-PLAN.md — Utility function tests (slug, timestamp, todos, pathExists, resolveModel)
+- [x] 07-02-PLAN.md — Complex function tests (commit with git repos, websearch with fetch mocking)
 
 ### Phase 8: init.cjs Coverage
 **Goal**: init.cjs reaches 75%+ line coverage with all init command functions tested
@@ -127,9 +127,9 @@ Plans:
 | 4. config.cjs + template.cjs Tests | v1.0 | 2/2 | Complete | 2026-02-25 |
 | 5. milestone.cjs Tests | v1.0 | 2/2 | Complete | 2026-02-25 |
 | 6. CI Pipeline | v1.0 | 1/1 | Complete | 2026-02-25 |
-| 7. commands.cjs Coverage | v1.1 | 0/2 | Planned | - |
+| 7. commands.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
 | 8. init.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
-| 9. state.cjs Coverage | 2/2 | Complete    | 2026-02-25 | - |
-| 10. gsd-tools.cjs Coverage | 1/1 | Complete    | 2026-02-25 | - |
-| 11. roadmap.cjs Coverage | 2/2 | Complete    | 2026-02-25 | - |
-| 12. Coverage Tooling | 2/2 | Complete   | 2026-02-25 | - |
+| 9. state.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
+| 10. gsd-tools.cjs Coverage | v1.1 | 1/1 | Complete | 2026-02-25 |
+| 11. roadmap.cjs Coverage | v1.1 | 2/2 | Complete | 2026-02-25 |
+| 12. Coverage Tooling | v1.1 | 2/2 | Complete | 2026-02-25 |

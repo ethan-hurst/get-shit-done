@@ -22,6 +22,7 @@ metrics:
   completed: "2026-02-25"
   tasks_completed: 2
   files_modified: 1
+requirements-completed: [STATE-01, STATE-02, STATE-03]
 ---
 
 # Phase 9 Plan 1: State CJS Helper and CRUD Command Tests Summary
