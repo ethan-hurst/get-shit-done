@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Every module has tests that catch regressions before they reach users
-**Current focus:** v1.1 Coverage Hardening — Phase 13: Verification & Milestone Cleanup (COMPLETE) — v1.1 MILESTONE COMPLETE
+**Current focus:** Planning next milestone — v1.1 Coverage Hardening ARCHIVED
 
 ## Current Position
 
-Phase: 13 of 13 (Verification & Milestone Cleanup) — COMPLETE
-Plan: 13-04 complete — phase 13 done
-Status: v1.1 milestone complete — all requirements verified, all tech debt resolved
-Last activity: 2026-02-25 — Phase 13 executed: created 07/08/12 VERIFICATION.md files, fixed ROADMAP progress table, fixed 09-01-SUMMARY.md frontmatter, added Node 18 CI compatibility, removed redundant c8 flag
+Phase: v1.1 complete and archived
+Plan: —
+Status: Between milestones — run /gsd:new-milestone to start v1.2
+Last activity: 2026-02-25 — v1.1 Coverage Hardening complete: 433 tests, 94.01% coverage, all 11 modules above 70%, archived to .planning/milestones/
 
 Progress: [██████████] 100% (v1.1)
 
@@ -32,24 +32,7 @@ Progress: [██████████] 100% (v1.1)
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v1.1 start]: c8 chosen for coverage (works natively with node:test via V8 coverage)
-- [v1.1 start]: One PR per module pattern continues from v1.0 (phases 7-11 = one PR each)
-- [v1.1 start]: CMD-05 (cmdWebsearch) requires async test pattern — may need mock or skip strategy
-- [Phase 7]: cmdWebsearch async testing solved with direct import + stdout interception + fetch mocking
-- [Phase 7]: createTempGitProject helper used for cmdCommit git repo isolation tests
-- [Phase 8]: Todo fixture pattern: create .planning/todos/pending/ with .md files for cmdInitTodos testing
-- [Phase 8]: Real temp directories used for cmdInitNewProject find shell-out (no execSync mocking)
-- [Phase 9]: stateExtractField/stateReplaceField imported directly as pure functions (no process.exit risk)
-- [Phase 9]: state patch tests use single-word fields to avoid shell quoting issues with spaces in flag names
-- [Phase 9-02]: resolve-blocker returns resolved:true even when no line matches (filter-only, not error)
-- [Phase 9-02]: record-session with no flags still updates Last session timestamp (idempotent)
-- [Phase 10]: summary-extract returns structured result (path, one_liner, requirements_completed), not raw frontmatter
-- [Phase 12]: c8 --all flag used to report uncovered files not imported by tests
-- [Phase 12]: Conditional CI steps via github.event_name — PRs get coverage, pushes get fast tests
-- [Quick-1]: Overfit tests deleted: schema shape assertions, per-profile lookup matrix (12 tests → 1 structural validation), hardcoded default value checks, raw URL encoding checks, midnight-fragile date snapshot
+All v1.1 decisions archived to PROJECT.md Key Decisions table. See .planning/milestones/ for full history.
 
 ### Pending Todos
 
@@ -57,7 +40,7 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 12]: RESOLVED — all modules above 70% (lowest: commands.cjs at 88.86%)
+None.
 
 ### Quick Tasks Completed
 
@@ -68,5 +51,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 13 complete — v1.1 milestone complete
+Stopped at: v1.1 milestone archived — between milestones
 Resume file: None
