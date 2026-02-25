@@ -86,7 +86,10 @@ Plans:
   1. `npm test` runs extended milestone.cjs tests and all tests pass
   2. A test confirms `milestone complete` archives completed phase files to the expected location
   3. A test confirms `requirements mark-complete` handles all requirement ID formats (TEST-XX, REG-XX, INFRA-XX, bare IDs)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 05-01-PLAN.md — milestone complete archiving and STATE.md update tests (TEST-15)
+- [ ] 05-02-PLAN.md — requirements mark-complete ID format and edge case tests (TEST-16)
 
 ### Phase 6: CI Pipeline
 **Goal**: Every push and PR to main automatically runs the full test suite across 3 OS and 3 Node versions
@@ -110,5 +113,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. frontmatter.cjs Tests | 2/2 | Complete | 2026-02-25 |
 | 3. verify.cjs Tests | 3/3 | Complete    | 2026-02-25 |
 | 4. config.cjs + template.cjs Tests | 2/2 | Complete | 2026-02-25 |
-| 5. milestone.cjs Tests | 0/TBD | Not started | - |
+| 5. milestone.cjs Tests | 0/2 | Planned | - |
 | 6. CI Pipeline | 0/TBD | Not started | - |
