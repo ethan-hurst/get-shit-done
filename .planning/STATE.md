@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 9 of 12 (state.cjs Coverage)
-Plan: 09-01 complete, ready for 09-02
-Status: In progress
-Last activity: 2026-02-25 — Plan 09-01 executed: 21 new state.cjs tests added (33 total, 390 suite)
+Plan: 09-02 complete — phase 09 done
+Status: Ready for next phase
+Last activity: 2026-02-25 — Plan 09-02 executed: 22 new state.cjs tests added (55 total, 412 suite)
 
 Progress: [██░░░░░░░░] 17% (v1.1)
 
@@ -44,6 +44,8 @@ Recent decisions affecting current work:
 - [Phase 8]: Real temp directories used for cmdInitNewProject find shell-out (no execSync mocking)
 - [Phase 9]: stateExtractField/stateReplaceField imported directly as pure functions (no process.exit risk)
 - [Phase 9]: state patch tests use single-word fields to avoid shell quoting issues with spaces in flag names
+- [Phase 9-02]: resolve-blocker returns resolved:true even when no line matches (filter-only, not error)
+- [Phase 9-02]: record-session with no flags still updates Last session timestamp (idempotent)
 
 ### Pending Todos
 
@@ -56,5 +58,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 9, Plan 09-01 complete
+Stopped at: Phase 9, Plan 09-02 complete
 Resume file: None
