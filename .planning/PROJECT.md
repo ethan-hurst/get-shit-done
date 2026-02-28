@@ -28,16 +28,16 @@ Reliable AI agent orchestration with quality gates that catch bad plans before e
 - ✓ Coverage thresholds enforced in CI (fail if any module drops below 70%) — v1.1
 - ✓ VERIFICATION.md audit trail for each coverage phase — v1.1
 
-### Active (v2.0 — MoE Panels)
+### Active (v1.3 — PR Review Fixes)
 
-- MoE panel infrastructure: 3 config keys (`plan_check_panel`, `verifier_panel`, `research_panel`), all default `false`
-- Plan Checker Panel: 3 parallel specialists (Structural, Semantic, Compliance) with consensus logic
-- Verifier Panel: 3 domain specialists (Artifacts, Requirements, Human) with domain-partitioned assembly
-- Research Panel: 3 domain researchers (Stack, Architecture, Pitfalls) with inline synthesis
-- Workflow routing: conditional panel dispatch based on config keys
-- Output contract preservation: panel output identical to single-agent output (same headers, frontmatter, patterns)
+- Split PR #762 into focused PRs: tests+CI, resolve-model fix, autopilot feature
+- Remove committed `.planning/` artifacts from PR branch
+- Fix auto-advance config mutation — use runtime flag instead of config.json persistence
+- Coordinate resolve-model fix with PR #761 to avoid merge conflicts
+- Add runtime validation for `discuss_agents` in auto-discuss workflow
+- Document `model_overrides` config or remove if premature
 
-*Full requirements in `.planning/REQUIREMENTS.md` (pending creation)*
+*Full requirements in `.planning/REQUIREMENTS.md`*
 
 ### Out of Scope
 
@@ -48,12 +48,12 @@ Reliable AI agent orchestration with quality gates that catch bad plans before e
 - Windows-specific path separator tests (WIN-01) — future candidate
 - Windows CRLF line ending handling tests (CRLF-01) — future candidate
 
-## Current Milestone: v2.0 — MoE Panels
+## Current Milestone: v1.3 — PR Review Fixes
 
-**Phase:** Defining requirements (research pending)
+**Phase:** Defining requirements
 **Starting phase:** 14 (continuing from v1.1's Phase 13)
 
-Adds Mixture of Experts panels for the three highest-variance quality gates: plan checking, verification, and phase research. Each panel replaces a single-agent step with 3 parallel specialists, improving coverage without changing user-facing commands or output formats.
+Addresses reviewer feedback on PR #762 (autopilot mode). Splits the monolithic PR into focused PRs, removes committed dev artifacts, fixes identified code issues (auto-advance mutation, validation gaps), and coordinates overlapping fixes with PR #761.
 
 ## Current State
 
@@ -97,4 +97,4 @@ Known bugs documented and tested (tests assert current behavior, production code
 | VERIFICATION.md per coverage phase | Audit trail for orphaned requirements found in milestone audit | ✓ Good — all requirements now have 3-source verification |
 
 ---
-*Last updated: 2026-02-26 — v2.0 MoE Panels milestone started*
+*Last updated: 2026-02-28 — v1.3 PR Review Fixes milestone started*

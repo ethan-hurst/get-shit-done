@@ -1,9 +1,11 @@
 # Project State
 
-## Current Milestone: v2.0 — MoE Panels
+## Current Milestone: v1.3 — PR Review Fixes
 
-**Phase:** Pre-phase (defining requirements)
-**Status:** Research pending, then requirements definition
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
+**Last activity:** 2026-02-28 — Milestone v1.3 started
 
 ## Milestone History
 
@@ -26,3 +28,5 @@
 - Agent definitions: `agents/` directory (markdown files)
 - Workflow definitions: `get-shit-done/workflows/` directory
 - Codebase map: `.planning/codebase/` (7 documents, analyzed 2026-02-25)
+- PR #762: open, changes requested by @glittercowboy
+- PR #761: overlapping resolve-model fix (closed)
