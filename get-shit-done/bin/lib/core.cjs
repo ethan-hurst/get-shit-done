@@ -126,7 +126,7 @@ function loadConfig(cwd, paths) {
 
 function isGitIgnored(cwd, targetPath) {
   try {
-    execSync('git check-ignore -q -- ' + targetPath.replace(/[^a-zA-Z0-9._\-/]/g, ''), {
+    execSync('git check-ignore --no-index -q -- ' + targetPath.replace(/[^a-zA-Z0-9._\-/]/g, ''), {
       cwd,
       stdio: 'pipe',
     });
