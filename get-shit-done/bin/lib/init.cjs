@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, normalizePhaseName, toPosixPath, output, error } = require('./core.cjs');
+const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, getRoadmapPhaseNumbersInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, normalizePhaseName, toPosixPath, output, error } = require('./core.cjs');
 
 function cmdInitExecutePhase(cwd, phase, raw) {
   if (!phase) {
@@ -647,6 +647,8 @@ function cmdInitProgress(cwd, raw) {
     }
   } catch {}
 
+  const roadmapPhaseCount = getRoadmapPhaseNumbersInternal(cwd).length;
+
   // Check for paused work
   let pausedAt = null;
   try {
@@ -674,6 +676,7 @@ function cmdInitProgress(cwd, raw) {
     phase_count: phases.length,
     completed_count: phases.filter(p => p.status === 'complete').length,
     in_progress_count: phases.filter(p => p.status === 'in_progress').length,
+    roadmap_phase_count: roadmapPhaseCount,
 
     // Current state
     current_phase: currentPhase,
