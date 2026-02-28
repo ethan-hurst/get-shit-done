@@ -636,9 +636,120 @@ describe('milestone create auto-migration', () => {
     const msStatePath = path.join(tmpDir, '.planning', 'milestones', 'v1.0', 'STATE.md');
     assert.ok(fs.existsSync(msStatePath));
   });
+
+  test('migration derives slug from **Milestone:** field in STATE.md', () => {
+    const legacyStatePath = path.join(tmpDir, '.planning', 'STATE.md');
+    fs.writeFileSync(legacyStatePath,
+      '# State\n\n**Milestone:** v1.0 MVP\n**Status:** Executing Phase 2\n');
+
+    const result = runGsdTools('milestone create v2.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok(output.migrated_from, `Expected migrated_from to be set, got: ${output.migrated_from}`);
+
+    // The migrated milestone directory should exist
+    const migratedDir = path.join(tmpDir, '.planning', 'milestones', output.migrated_from);
+    assert.ok(fs.existsSync(migratedDir),
+      `Migrated directory should exist: ${migratedDir}`);
+  });
+
+  test('migrated files include ROADMAP.md and config.json', () => {
+    // Create all three legacy files
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'),
+      '# State\n\n**Status:** Ready to plan\n');
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      '# Roadmap\n\n### Phase 1: Setup\n');
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'),
+      '{"commit_docs": true}');
+
+    const result = runGsdTools('milestone create v1.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    if (output.migrated_from) {
+      const msDir = path.join(tmpDir, '.planning', 'milestones', output.migrated_from);
+      assert.ok(fs.existsSync(path.join(msDir, 'STATE.md')), 'STATE.md should be migrated');
+      assert.ok(fs.existsSync(path.join(msDir, 'ROADMAP.md')), 'ROADMAP.md should be migrated');
+      assert.ok(fs.existsSync(path.join(msDir, 'config.json')), 'config.json should be migrated');
+    }
+  });
+
+  test('second create does NOT re-migrate', () => {
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'),
+      '# State\n\n**Status:** Ready to plan\n');
+
+    const first = runGsdTools('milestone create v1.0', tmpDir);
+    assert.ok(first.success, `First create failed: ${first.error}`);
+    const firstOutput = JSON.parse(first.output);
+
+    const second = runGsdTools('milestone create v2.0', tmpDir);
+    assert.ok(second.success, `Second create failed: ${second.error}`);
+    const secondOutput = JSON.parse(second.output);
+
+    assert.strictEqual(secondOutput.migrated_from, null,
+      'second create should not trigger migration');
+  });
+
+  test('migration without **Milestone:** uses "initial" slug', () => {
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'),
+      '# State\n\n**Status:** Ready to plan\n');
+
+    const result = runGsdTools('milestone create v1.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.migrated_from, 'initial',
+      'should use "initial" when no Milestone line exists');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// validate consistency command
+// milestone edge cases
 // ─────────────────────────────────────────────────────────────────────────────
+
+describe('milestone edge cases', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('switch to non-existent milestone fails', () => {
+    runGsdTools('milestone create v1.0', tmpDir);
+
+    const result = runGsdTools('milestone switch nonexistent', tmpDir);
+    assert.strictEqual(result.success, false, 'should fail for non-existent milestone');
+  });
+
+  test('create duplicate name is idempotent', () => {
+    const first = runGsdTools('milestone create v1.0', tmpDir);
+    assert.ok(first.success, `First create failed: ${first.error}`);
+
+    const second = runGsdTools('milestone create v1.0', tmpDir);
+    assert.ok(second.success, `Second create failed: ${second.error}`);
+
+    const secondOutput = JSON.parse(second.output);
+    assert.strictEqual(secondOutput.created, true);
+
+    // ACTIVE_MILESTONE should still be correct
+    const active = fs.readFileSync(
+      path.join(tmpDir, '.planning', 'ACTIVE_MILESTONE'), 'utf-8'
+    ).trim();
+    assert.strictEqual(active, 'v1.0');
+  });
+
+  test('list with zero milestones returns empty array', () => {
+    const result = runGsdTools('milestone list', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.deepStrictEqual(output.milestones, []);
+    assert.strictEqual(output.count, 0);
+  });
+});
 

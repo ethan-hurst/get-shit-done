@@ -448,3 +448,126 @@ describe('--milestone flag integration', () => {
     assert.strictEqual(output.state_path, '.planning/milestones/v2.0/STATE.md');
   });
 });
+
+// ─── milestone state isolation ──────────────────────────────────────────────
+
+describe('milestone state isolation', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('milestone create v1.0', tmpDir);
+    runGsdTools('milestone create v2.0', tmpDir);
+  });
+
+  afterEach(() => {
+    setMilestoneOverride(null);
+    cleanup(tmpDir);
+  });
+
+  test('state written to v1.0 is not visible from v2.0', () => {
+    // Write a marker into v1.0 STATE.md
+    const v1StatePath = path.join(tmpDir, '.planning', 'milestones', 'v1.0', 'STATE.md');
+    const original = fs.readFileSync(v1StatePath, 'utf-8');
+    fs.writeFileSync(v1StatePath, original + '\n**Marker:** v1-unique-data\n');
+
+    // Load state from v2.0
+    const result = runGsdTools('state load --milestone v2.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+    assert.ok(!result.output.includes('v1-unique-data'),
+      'v2.0 state should not contain v1.0 marker');
+  });
+
+  test('state written to v2.0 is not visible from v1.0', () => {
+    const v2StatePath = path.join(tmpDir, '.planning', 'milestones', 'v2.0', 'STATE.md');
+    const original = fs.readFileSync(v2StatePath, 'utf-8');
+    fs.writeFileSync(v2StatePath, original + '\n**Marker:** v2-unique-data\n');
+
+    const result = runGsdTools('state load --milestone v1.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+    assert.ok(!result.output.includes('v2-unique-data'),
+      'v1.0 state should not contain v2.0 marker');
+  });
+
+  test('phases are isolated per milestone', () => {
+    // Create different phase dirs in each milestone
+    const v1Phases = path.join(tmpDir, '.planning', 'milestones', 'v1.0', 'phases', '01-setup');
+    const v2Phases = path.join(tmpDir, '.planning', 'milestones', 'v2.0', 'phases', '01-api');
+    fs.mkdirSync(v1Phases, { recursive: true });
+    fs.mkdirSync(v2Phases, { recursive: true });
+    fs.writeFileSync(path.join(v1Phases, '01-01-PLAN.md'), '# Setup Plan');
+    fs.writeFileSync(path.join(v2Phases, '01-01-PLAN.md'), '# API Plan');
+
+    const r1 = runGsdTools('init execute-phase 1 --milestone v1.0', tmpDir);
+    assert.ok(r1.success, `v1.0 failed: ${r1.error}`);
+    const o1 = JSON.parse(r1.output);
+    assert.ok(o1.phase_name.includes('setup'), `v1.0 phase should be setup, got: ${o1.phase_name}`);
+
+    const r2 = runGsdTools('init execute-phase 1 --milestone v2.0', tmpDir);
+    assert.ok(r2.success, `v2.0 failed: ${r2.error}`);
+    const o2 = JSON.parse(r2.output);
+    assert.ok(o2.phase_name.includes('api'), `v2.0 phase should be api, got: ${o2.phase_name}`);
+  });
+
+  test('roadmap is isolated per milestone', () => {
+    // Write different roadmaps
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v1.0', 'ROADMAP.md'),
+      '# Roadmap\n\n### Phase 1: Foundation\n**Goal:** Setup\n'
+    );
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v2.0', 'ROADMAP.md'),
+      '# Roadmap\n\n### Phase 1: Advanced Features\n**Goal:** Build\n\n### Phase 2: Polish\n**Goal:** Ship\n'
+    );
+
+    const r1 = runGsdTools('roadmap analyze --milestone v1.0', tmpDir);
+    assert.ok(r1.success, `v1.0 analyze failed: ${r1.error}`);
+    const o1 = JSON.parse(r1.output);
+    assert.strictEqual(o1.phase_count, 1, 'v1.0 should have 1 phase');
+
+    const r2 = runGsdTools('roadmap analyze --milestone v2.0', tmpDir);
+    assert.ok(r2.success, `v2.0 analyze failed: ${r2.error}`);
+    const o2 = JSON.parse(r2.output);
+    assert.strictEqual(o2.phase_count, 2, 'v2.0 should have 2 phases');
+  });
+
+  test('config is isolated per milestone', () => {
+    // Write different configs
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v1.0', 'config.json'),
+      JSON.stringify({ commit_docs: false })
+    );
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v2.0', 'config.json'),
+      JSON.stringify({ commit_docs: true })
+    );
+
+    const c1 = JSON.parse(fs.readFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v1.0', 'config.json'), 'utf-8'
+    ));
+    const c2 = JSON.parse(fs.readFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v2.0', 'config.json'), 'utf-8'
+    ));
+
+    assert.strictEqual(c1.commit_docs, false, 'v1.0 config should have commit_docs: false');
+    assert.strictEqual(c2.commit_docs, true, 'v2.0 config should have commit_docs: true');
+  });
+
+  test('ACTIVE_MILESTONE pointer is shared between milestones', () => {
+    const activePath = path.join(tmpDir, '.planning', 'ACTIVE_MILESTONE');
+
+    // Switch to v1.0
+    runGsdTools('milestone switch v1.0', tmpDir);
+    assert.strictEqual(
+      fs.readFileSync(activePath, 'utf-8').trim(), 'v1.0',
+      'ACTIVE_MILESTONE should point to v1.0'
+    );
+
+    // Switch to v2.0
+    runGsdTools('milestone switch v2.0', tmpDir);
+    assert.strictEqual(
+      fs.readFileSync(activePath, 'utf-8').trim(), 'v2.0',
+      'ACTIVE_MILESTONE should point to v2.0'
+    );
+  });
+});

@@ -844,6 +844,92 @@ describe('cmdInitNewMilestone', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// init commands with --milestone flag
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('init commands with --milestone flag', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('milestone create v2.0', tmpDir);
+    // Create phase dir inside milestone
+    const phaseDir = path.join(tmpDir, '.planning', 'milestones', 'v2.0', 'phases', '01-api');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(phaseDir, '01-01-PLAN.md'), '# Plan');
+    fs.writeFileSync(path.join(phaseDir, '01-CONTEXT.md'), '# Context');
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('init execute-phase 1 --milestone v2.0 scopes to milestone paths', () => {
+    const result = runGsdTools('init execute-phase 1 --milestone v2.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok(output.state_path.includes('milestones/v2.0'),
+      `state_path should contain milestones/v2.0, got: ${output.state_path}`);
+    assert.ok(output.roadmap_path.includes('milestones/v2.0'),
+      `roadmap_path should contain milestones/v2.0, got: ${output.roadmap_path}`);
+    assert.strictEqual(output.is_multi_milestone, true);
+  });
+
+  test('init plan-phase 1 --milestone v2.0 scopes to milestone', () => {
+    const result = runGsdTools('init plan-phase 1 --milestone v2.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok(output.state_path.includes('milestones/v2.0'),
+      `state_path should contain milestones/v2.0, got: ${output.state_path}`);
+    assert.strictEqual(output.milestone, 'v2.0');
+  });
+
+  test('init phase-op 1 --milestone v2.0 finds phase in milestone', () => {
+    const result = runGsdTools('init phase-op 1 --milestone v2.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.phase_found, true, 'phase should be found');
+    assert.ok(output.phase_dir.includes('milestones/v2.0'),
+      `phase_dir should contain milestones/v2.0, got: ${output.phase_dir}`);
+  });
+
+  test('without flag uses ACTIVE_MILESTONE', () => {
+    // v2.0 is already active from create
+    const result = runGsdTools('init execute-phase 1', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok(output.state_path.includes('milestones/v2.0'),
+      `should use active milestone v2.0, got: ${output.state_path}`);
+  });
+
+  test('flag overrides ACTIVE_MILESTONE', () => {
+    // v2.0 is active, create v3.0 but don't switch to it
+    const v3Phases = path.join(tmpDir, '.planning', 'milestones', 'v3.0', 'phases', '01-core');
+    fs.mkdirSync(v3Phases, { recursive: true });
+    fs.writeFileSync(path.join(v3Phases, '01-01-PLAN.md'), '# Plan');
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v3.0', 'STATE.md'),
+      '# State\n'
+    );
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'milestones', 'v3.0', 'ROADMAP.md'),
+      '# Roadmap\n'
+    );
+
+    const result = runGsdTools('init execute-phase 1 --milestone v3.0', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.milestone, 'v3.0',
+      `flag should override active, got: ${output.milestone}`);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // roadmap analyze command
 // ─────────────────────────────────────────────────────────────────────────────
 
