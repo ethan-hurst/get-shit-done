@@ -275,9 +275,10 @@ async function main() {
 
     case 'commit': {
       const amend = args.includes('--amend');
-      const message = args[1];
-      // Parse --files flag (collect args after --files, stopping at other flags)
       const filesIndex = args.indexOf('--files');
+      // Collect all positional args between command and first flag as the message
+      const msgEnd = filesIndex !== -1 ? filesIndex : args.length;
+      const message = args.slice(1, msgEnd).filter(a => !a.startsWith('--')).join(' ');
       const files = filesIndex !== -1 ? args.slice(filesIndex + 1).filter(a => !a.startsWith('--')) : [];
       commands.cmdCommit(cwd, message, files, raw, amend);
       break;
