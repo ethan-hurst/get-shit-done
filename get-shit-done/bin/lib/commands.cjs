@@ -416,6 +416,7 @@ function cmdProgressRender(cwd, format, raw) {
     }
   } catch {}
 
+  // Clamp to 100% — summaries can exceed plans when orphaned SUMMARY.md files remain (#760)
   const percent = totalPlans > 0 ? Math.min(100, Math.round((totalSummaries / totalPlans) * 100)) : 0;
 
   if (format === 'table') {
