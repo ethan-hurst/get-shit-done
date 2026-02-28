@@ -1,337 +1,285 @@
-# Feature Landscape: MoE Panels & Consensus Mechanisms
+# Feature Research: PR Review Fixes
 
-**Domain:** AI agent orchestration quality gates with parallel specialist panels
-**Researched:** 2026-02-26
-**Overall Confidence:** MEDIUM-HIGH
+**Domain:** OSS contributor workflow — addressing reviewer feedback on autopilot mode PR
+**Researched:** 2026-02-28
+**Confidence:** HIGH
 
-## Executive Summary
+## Context
 
-GSD currently uses single-agent quality gates (plan-checker, verifier, phase-researcher) that each bear the full responsibility of their domain. The v2.0 MoE Panels milestone replaces each gate with a panel of 3 parallel specialists, each covering a non-overlapping domain partition. This is not a voting system -- it is a domain-partitioned assembly pattern where each specialist owns distinct sections of the output document and a synthesizer merges their non-overlapping contributions.
+This research addresses four discrete fix areas from reviewer feedback on PR #762 (autopilot mode). The PR was flagged for scope creep (5 distinct efforts bundled together), a config mutation bug, missing validation, and undocumented config. Research below maps each fix area to table stakes vs differentiators, with complexity and dependency notes.
 
-The key insight from research: **voting and consensus mechanisms solve a different problem than what GSD panels need.** Voting works when multiple agents evaluate the *same* thing and you need to pick the best answer. Domain-partitioned assembly works when agents evaluate *different things* and you need to combine their non-overlapping findings. GSD panels are the latter -- specialists checking distinct dimensions, not redundant reviewers voting on the same dimensions.
+---
 
-The auto-discuss workflow already proves the panel pattern works in this codebase: it spawns N agents in parallel, collects structured outputs, and synthesizes them. The MoE panel pattern is a constrained version of auto-discuss where specialist domains are pre-defined (not dynamically generated) and output sections are non-overlapping (not debated).
+## Fix Area 1: Runtime Flags vs Config File Mutation
 
-## Table Stakes
+### The Problem
 
-Features that must exist for panels to deliver value over the current single-agent gates.
+`autopilot.md` calls `config-set workflow.auto_advance true` to enable auto-advance for the duration of the autopilot run. This mutates `.planning/config.json` persistently. If autopilot is interrupted (crash, kill, user cancel), the `milestone_complete` cleanup step never fires, and `auto_advance` stays `true` in the user's config file permanently. The reviewer correctly identified this as a correctness bug.
 
-| Feature | Why Expected | Complexity | Confidence | Notes |
-|---------|-------------|------------|------------|-------|
-| Parallel specialist spawning | Panels must run specialists concurrently to avoid 3x latency | Low | HIGH | GSD already spawns parallel agents in auto-discuss and wave execution |
-| Domain-partitioned output assembly | Each specialist must own distinct document sections to avoid duplication and conflict | Medium | HIGH | Core innovation -- see Architecture section |
-| Backward compatibility with orchestrators | plan-phase, execute-phase, and research-phase must consume panel output identically to single-agent output | Medium | HIGH | VERIFICATION.md, RESEARCH.md, and checker returns must keep same format |
-| Per-panel configuration | Users must be able to enable/disable panels per gate (config.json) and fall back to single-agent | Low | HIGH | Follows existing `workflow.research`, `workflow.plan_check`, `workflow.verifier` pattern |
-| Specialist agent definitions (9 agents) | 3 specialists per panel x 3 panels = 9 new agent .md files | High | HIGH | Largest content effort -- each agent needs focused role, dimensions, and output format |
-| Panel synthesizer logic | Orchestrator or synthesizer agent must merge 3 specialist outputs into single output document | Medium | MEDIUM | Similar to gsd-research-synthesizer pattern already in codebase |
-| Cross-validation between specialists | When one specialist flags an issue, adjacent specialists should verify (reduces false positives) | Medium | MEDIUM | Inspired by diffray's cross-validation approach (87% fewer false positives) |
-| Model-per-specialist configuration | Different specialists may benefit from different model strengths | Low | HIGH | Already supported via model profile resolution |
+### Table Stakes (Must Fix)
 
-## Differentiators
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Auto-advance enabled only for autopilot session | Users expect that running `/gsd:autopilot` does not permanently change their config | LOW | Industry standard: CLI flags are session-scoped; config files are persistent preferences. npm, git, cargo, kubectl all follow this pattern. |
+| Cleanup idempotency | If autopilot stops for any reason (gap found, checkpoint, crash), config must not be left in a mutated state | LOW | Session flag eliminates the cleanup problem entirely — no cleanup needed if nothing was mutated |
+| No regression for manual `auto_advance` config | Users who have `workflow.auto_advance: true` in their config file manually must see no behavior change | LOW | Session flag is additive — it passes `--auto` argument or reads an in-memory flag, not touching disk config |
 
-Features that elevate panels beyond basic parallel execution.
+### Differentiators (Nice to Have)
 
-| Feature | Value Proposition | Complexity | Confidence | Notes |
-|---------|-------------------|------------|------------|-------|
-| Conflict detection at merge time | When two specialists make contradictory claims about the same artifact, flag for resolution rather than silently including both | Medium | MEDIUM | Only relevant at domain boundaries -- should be rare with good partitioning |
-| Specialist confidence weighting | Specialists report confidence per finding; synthesizer weights HIGH findings above LOW | Low | MEDIUM | Lightweight version of attention-based routing from MoE literature |
-| Degraded-mode fallback | If one specialist fails/times out, produce partial panel output with explicit gaps rather than blocking entirely | Medium | HIGH | Important for reliability -- single-agent fallback for failed specialist |
-| Panel-level scoring | Aggregate specialist scores into panel-level pass/fail with drill-down | Low | HIGH | Verifier already produces scores; extend to per-specialist breakdown |
-| Configurable specialist count | Allow 1-specialist (single-agent mode), 3-specialist (standard), or 5-specialist (deep) per panel | Medium | LOW | Premature optimization; start with 3-specialist only, add later |
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| `--no-auto` flag to disable auto-advance per-invocation | Allows users with persistent `auto_advance: true` to run a single manual phase | LOW | Inverse of the runtime flag pattern |
+| Explicit autopilot mode banner showing active runtime overrides | User sees what config overrides are active for this run | LOW | Transparency over magic |
 
-## Anti-Features
-
-Features to explicitly NOT build.
+### Anti-Features
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Voting/majority consensus between specialists | Specialists own non-overlapping domains -- there is nothing to vote on. Voting suits overlapping evaluations (like auto-discuss where agents evaluate the same gray areas). | Use domain-partitioned assembly: each specialist contributes its section, synthesizer merges. |
-| Multi-round debate between specialists | Research shows increasing discussion rounds *decreases* performance (Kaesberg et al., 2025). Adds latency with diminishing returns. | Single-round parallel execution. If cross-validation catches a conflict, the synthesizer resolves it -- no iterative debate. |
-| Dynamic specialist routing (MoE-style gating) | True MoE routing requires a trained gating network. Our specialists are pre-assigned -- the "routing" is static by design. Dynamic routing adds complexity without benefit for 3-specialist panels. | Static assignment: each specialist always runs. All 3 always fire. |
-| Shared context between parallel specialists | Research shows isolated execution produces better diversity. Claude Code subagents already run in isolated contexts. Sharing context risks groupthink. | Each specialist gets independent context. Synthesizer sees all outputs. |
-| Complex weighting/scoring algorithms | Over-engineering the merge. The output is markdown, not numerical predictions. | Simple structured merge with section ownership. |
-| Specialist-to-specialist communication during execution | Adds synchronization complexity, defeats the purpose of parallelism, risks cascading failures. | Post-execution cross-validation only (synthesizer reads all outputs, flags contradictions). |
+| Writing session state to config.json | Leaks ephemeral state into persistent user preferences; impossible to clean up on crash | Pass `--auto` as argument to the plan-phase subagent Task call instead of persisting to config |
+| Using a `.lock` file as session marker | Adds complexity and still leaves cleanup problem | Argument-based activation has no cleanup problem |
 
-## Consensus Mechanism Analysis
+### Implementation Pattern
 
-The central design question. Based on research into how multi-agent systems combine specialist outputs.
+The standard pattern across CLI tooling (npm, git, curl): command-line arguments override config values for that invocation only. Config files store user preferences; flags store session intent.
 
-### Mechanism 1: UNION Assembly (RECOMMENDED)
+For GSD: remove the `config-set workflow.auto_advance true` step from `autopilot.md`. Instead, the `run_phase_chain` step passes `ARGUMENTS='${PHASE} --auto'` to plan-phase. The plan-phase workflow already has an `auto_advance` check that reads config — extend it to also check for `--auto` in arguments. No config mutation, no cleanup needed.
 
-**What:** Each specialist owns non-overlapping sections of the output document. Synthesizer concatenates sections, resolves boundary conflicts, and produces the final document.
+**Dependency:** Requires reading `--auto` flag in `plan-phase.md`'s auto_advance logic. Low touch — plan-phase already has this branching.
 
-**When it works:** When specialists have clearly partitioned domains with minimal overlap (which is the design intent for all 3 panels).
-
-**Evidence:** This is how diffray's multi-agent code review works -- 11 specialists each own a concern, findings are merged and deduplicated. Google ADK's ParallelAgent pattern also uses this: parallel execution with post-processing merge. The existing gsd-research-synthesizer in this codebase is literally a UNION assembler -- it reads 4 parallel researcher outputs (STACK, FEATURES, ARCHITECTURE, PITFALLS) and synthesizes SUMMARY.md.
-
-**Tradeoffs:**
-- PRO: No latency penalty beyond slowest specialist (parallel execution)
-- PRO: No information loss (every specialist's findings included)
-- PRO: Simple implementation (structured merge, no voting logic)
-- CON: Requires clean domain partitioning (overlap = conflicts)
-- CON: Synthesizer must handle boundary cases
-
-**Confidence:** HIGH -- This pattern is already proven in the codebase (research-synthesizer, auto-discuss synthesis step).
-
-### Mechanism 2: Majority Voting
-
-**What:** All specialists evaluate the same dimensions. Each votes pass/fail on each dimension. Majority wins.
-
-**When it works:** When you want redundancy -- multiple agents checking the same thing to reduce error.
-
-**Evidence:** The Kaesberg et al. (2025) study found voting improves reasoning tasks by 13.2% over consensus, but this applies to tasks where agents solve the *same* problem. Multi-Agent Verification (MAV) scales verifiers, not specialists.
-
-**Tradeoffs:**
-- PRO: Built-in redundancy (3 agents checking same thing = fewer misses)
-- CON: 3x the work for marginally better accuracy on the same dimensions
-- CON: Loses the benefit of domain specialization (generalist voters, not specialists)
-- CON: Still need a tie-breaking mechanism for 3 agents
-
-**Confidence:** HIGH that this is the WRONG pattern for GSD panels. Voting suits auto-discuss (same gray areas, different perspectives). Panels need specialization, not redundancy.
-
-### Mechanism 3: Consensus via Iterative Debate
-
-**What:** Specialists discuss findings, iterate toward agreement, converge on shared output.
-
-**Evidence:** Research shows consensus reduces hallucination on fact-based tasks (2.8% improvement) but multiple rounds decrease overall performance. Debate adds latency proportional to round count.
-
-**Tradeoffs:**
-- PRO: May catch edge cases at domain boundaries
-- CON: Significantly slower (2-5x latency per round)
-- CON: Research explicitly recommends AGAINST multiple rounds
-- CON: Complexity explosion in prompt engineering
-
-**Confidence:** HIGH that this is overkill for GSD panels.
-
-### Mechanism 4: Domain-Partitioned Assembly with Cross-Validation (RECOMMENDED VARIANT)
-
-**What:** UNION assembly (Mechanism 1) plus a lightweight cross-validation step where the synthesizer checks for contradictions between specialist outputs before producing the final document.
-
-**Example:** Plan-checker structural specialist says "dependencies valid" but semantic specialist says "task 3 references output from task 1 which doesn't produce that artifact." The synthesizer flags this as a cross-validation conflict and elevates severity.
-
-**Tradeoffs:**
-- PRO: Gets the speed of UNION assembly
-- PRO: Catches boundary-crossing issues
-- PRO: Synthesizer is a natural place for this (already reads all outputs)
-- CON: Slightly more complex synthesizer logic
-
-**Confidence:** HIGH -- This is the recommended approach.
-
-## Panel Designs: Detailed Feature Maps
-
-### Panel 1: Plan Checker Panel
-
-**Current single agent:** gsd-plan-checker (8 verification dimensions, returns "VERIFICATION PASSED" or "ISSUES FOUND")
-
-**Panel specialists:**
-
-| Specialist | Domain | Dimensions Owned | Output Section |
-|------------|--------|-----------------|----------------|
-| **Structural Integrity** | Plan mechanics: frontmatter, task completeness, dependency graphs, wave assignment, scope metrics | Dim 2 (Task Completeness), Dim 3 (Dependency Correctness), Dim 5 (Scope Sanity), Dim 8 (Nyquist Compliance) | `## Structural Analysis` |
-| **Semantic Quality** | Goal-backward analysis: requirement coverage, must_haves derivation, key links planned, action specificity | Dim 1 (Requirement Coverage), Dim 4 (Key Links Planned), Dim 6 (Verification Derivation) | `## Semantic Analysis` |
-| **Compliance** | External constraints: CONTEXT.md decisions, project skills, CLAUDE.md conventions, deferred ideas exclusion | Dim 7 (Context Compliance), plus project skill rules, plus CLAUDE.md conventions | `## Compliance Analysis` |
-
-**Why this partition:** Structural checks are mechanical (parseable, countable). Semantic checks require reasoning about intent vs. outcome. Compliance checks require cross-referencing external constraint documents. These are genuinely different cognitive tasks.
-
-**Synthesizer behavior:** Merge all 3 sections. Cross-validate: if Structural says "3 tasks" but Semantic says "requirement X covered by tasks 1,2,3,4" -- flag inconsistency. Produce unified issue list with severity. Overall pass/fail uses worst-case: any blocker from any specialist = ISSUES FOUND.
-
-**Output format (backward compatible):**
-```markdown
-## VERIFICATION PASSED | ISSUES FOUND
-
-**Phase:** {phase-name}
-**Plans verified:** {N}
-**Panel:** Structural + Semantic + Compliance
-
-### Structural Analysis
-[Structural specialist output: dimensions 2,3,5,8]
-
-### Semantic Analysis
-[Semantic specialist output: dimensions 1,4,6]
-
-### Compliance Analysis
-[Compliance specialist output: dimension 7 + project rules]
-
-### Cross-Validation Notes
-[Synthesizer's boundary-crossing findings]
-
-### Unified Issue List
-[Merged, deduplicated, severity-ranked issues from all specialists]
-```
-
-**Confidence:** HIGH -- The 8-dimension structure naturally partitions into these 3 groups. No dimension is ambiguously assigned.
-
-### Panel 2: Verifier Panel
-
-**Current single agent:** gsd-verifier (3-level artifact verification, key link checks, anti-pattern scanning, creates VERIFICATION.md)
-
-**Panel specialists:**
-
-| Specialist | Domain | Checks Owned | Output Section |
-|------------|--------|-------------|----------------|
-| **Artifact & Wiring** | File existence, substantive content (not stubs), import/usage wiring, key link verification | Level 1 (exists), Level 2 (substantive), Level 3 (wired), Key Links | `## Artifact Verification` + `## Key Link Verification` |
-| **Requirements & Anti-Patterns** | Requirement coverage, anti-pattern scanning (TODO/FIXME/placeholder/empty returns), goal-backward truth verification | Requirement mapping, anti-pattern detection, truth status determination | `## Requirements Coverage` + `## Anti-Patterns Found` |
-| **Human Verification** | Items needing human testing, visual/UX concerns, external service integration checks, edge case identification | Human-needed classification, test script generation, uncertainty flagging | `## Human Verification Required` |
-
-**Why this partition:** Artifact/wiring checks are grep-based (mechanical file analysis). Requirement/anti-pattern checks are reasoning-based (does this code satisfy that requirement?). Human verification is judgment-based (what can't be verified programmatically?). Each requires different cognitive approaches and tool usage patterns.
-
-**Synthesizer behavior:** Merge sections into VERIFICATION.md format. Determine overall status: `passed` (all artifacts verified + all requirements satisfied + no blocker anti-patterns), `gaps_found` (any failure), `human_needed` (automated pass but human items remain). Score = verified truths / total truths. Cross-validate: if Artifact specialist says "file exists and is wired" but Anti-Pattern specialist says "file contains only TODO placeholders" -- elevate to blocker.
-
-**Output format (backward compatible):**
-```yaml
 ---
-phase: XX-name
-verified: YYYY-MM-DDTHH:MM:SSZ
-status: passed | gaps_found | human_needed
-score: N/M must-haves verified
-panel: artifact-wiring + requirements-antipatterns + human-verification
-gaps: [...]  # Merged from all specialists
-human_verification: [...]  # From human verification specialist
+
+## Fix Area 2: Input Validation for Config Values at Runtime
+
+### The Problem
+
+Two validation gaps identified in PR review:
+
+1. `config.cjs:cmdConfigSet` validates `discuss_agents` and `discuss_model` only when invoked via the `config-set` CLI command. Direct edits to `config.json` bypass this entirely.
+2. `auto-discuss.md` reads `AGENT_COUNT` from config and uses it directly in agent spawning logic without validating the value it received.
+
+### Table Stakes (Must Fix)
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Runtime validation of `discuss_agents` in auto-discuss | The workflow must not spawn 0, 2, 4, 6, 8, or 10+ agents just because config.json has a bad value | LOW | Standard defensive pattern: validate at consumption point, not only at write point |
+| Fallback to default on invalid config value | Invalid `discuss_agents` (non-odd, out-of-range) should fall back to 5, not crash or spawn wrong count | LOW | Same pattern as the existing `AGENT_COUNT=$(... 2>/dev/null \|\| echo "5")` fallback already in auto-discuss.md — extend it |
+| Validation message when falling back | User or caller knows a fallback occurred, not silently swallowing bad config | LOW | Print a warning to stderr: "discuss_agents=4 is invalid (must be odd 3-9), using 5" |
+
+### Differentiators (Nice to Have)
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| `config-validate` CLI command | Validates all config values against schema on demand | MEDIUM | Useful but separable — not needed for this PR fix |
+| JSON schema for `config.json` with validation on load | Catch all invalid values at config load time | MEDIUM | Adds robustness but is a larger change touching `loadConfig()` in core.cjs |
+| Startup validation warning for unknown config keys | Warns user that `model_overrides` or other undocumented keys are present | LOW | Complements documentation fix (Fix Area 3) |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Validating only at `config-set` write time | Direct JSON edits bypass CLI; any agent reading config cannot trust values it receives | Validate at consumption point in the workflow |
+| Crashing on invalid config | Breaks autopilot entirely for a recoverable problem | Fall back to documented default with a warning |
+
+### Implementation Pattern
+
+The OWASP Input Validation Cheat Sheet (2025) recommends allowlist validation: define exactly what is allowed, reject everything else. For `discuss_agents`:
+
+```bash
+# In auto-discuss.md initialize step
+AGENT_COUNT=$(node ~/.claude/get-shit-done/bin/gsd-tools.cjs config-get autopilot.discuss_agents 2>/dev/null || echo "5")
+# Validate: must be odd number 3-9
+case "$AGENT_COUNT" in
+  3|5|7|9) ;; # valid
+  *) echo "Warning: discuss_agents=$AGENT_COUNT invalid (must be 3/5/7/9). Using 5." >&2; AGENT_COUNT=5 ;;
+esac
+```
+
+**Dependency:** Self-contained change to `auto-discuss.md`. No changes to `config.cjs` required for this fix. The existing validation in `cmdConfigSet` is a separate concern (prevents bad values from being written via CLI) and is fine as-is for this milestone.
+
 ---
+
+## Fix Area 3: Config Documentation Best Practices
+
+### The Problem
+
+Two documentation gaps:
+
+1. `model_overrides` was added to `loadConfig()` in `core.cjs` with no validation, no documentation, and no tests. Reviewer flagged it as undocumented arbitrary JSON passthrough.
+2. The `autopilot` config section (`discuss_agents`, `discuss_model`) is added to defaults in `config.cjs` but not documented anywhere users can discover it.
+
+### Table Stakes (Must Fix)
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Every config key documented in one place | OSS users expect a single authoritative source for all config options | LOW | Industry convention: `README.md` config section, or `docs/config.md` — one file, all keys, types, defaults, description |
+| `model_overrides` documented or removed from this PR | If it has no tests and no documentation, it should not be in the PR | LOW | Remove from `loadConfig()` if premature; if intentional, add docs + at least one test for it |
+| New `autopilot.*` keys listed with types, defaults, valid values | Users configuring autopilot need to know the valid range for `discuss_agents` | LOW | Short addition to existing config docs section in README |
+
+### Differentiators (Nice to Have)
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Inline comments in the generated `config.json` defaults | Users see documentation when they open their config file | LOW | JSON doesn't support comments natively, but the `cmdConfigEnsureSection` output could include a header comment block as a separate file or README |
+| `config-docs` CLI command | Prints all config options with descriptions | MEDIUM | Nice for discoverability, separable from PR fix |
+| CHANGELOG.md entry for new config keys | Maintains project-level history of config schema evolution | LOW | Keep A Changelog pattern: add to `[Unreleased]` section under `### Added` |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Documenting config in PR description only | PR descriptions are not part of the codebase; users won't find them | Put docs in README or a dedicated config reference file |
+| Adding config options without tests | Untestable config options become technical debt | Pair each new config key with at least one test in `config.test.cjs` |
+
+### Documentation Pattern (OSS Standard)
+
+The Keep a Changelog specification and GitHub's own OSS project guidance both establish: every new configuration option added in a release should appear in (a) the changelog under `Added`, (b) the README config reference, and (c) if it has validation rules, those rules are tested.
+
+For `model_overrides` specifically: the OSS principle is "don't ship what you can't support." If it has no validation, no tests, and no documentation, it should be either removed from this PR or explicitly scoped to a follow-up PR with a `TODO:` comment and a failing test marking it as incomplete.
+
+**Dependency:** Purely additive changes to README.md and optionally CHANGELOG.md. No source code changes required for basic documentation fix. For `model_overrides`: either a one-line revert in `core.cjs` or a test addition in the test suite.
+
+---
+
+## Fix Area 4: PR Splitting Strategies
+
+### The Problem
+
+PR #762 bundles 5 distinct efforts into one 8,179-line addition PR:
+1. Test suite overhaul (~6,370 lines across 13 files)
+2. CI pipeline (~50 lines)
+3. Autopilot feature (~620 lines: `autopilot.md`, `auto-discuss.md`, config changes)
+4. Resolve-model fix (overlaps with PR #761)
+5. `model_overrides` config loading (undocumented, untested)
+
+### Table Stakes (Must Fix)
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Test suite + CI as standalone PR | Tests and CI can be reviewed and merged independently; reviewer can verify tests pass without the autopilot feature | LOW | No dependencies on autopilot code — pure test infrastructure |
+| Resolve-model fix coordinated with PR #761 | Two PRs fixing the same function will conflict on merge | LOW | One approach: rebase #762's resolve-model change on top of #761 after #761 lands, then drop it from this PR |
+| Autopilot feature as focused PR | The actual new feature with only its direct dependencies | LOW | Once tests+CI and resolve-model are extracted, the autopilot PR becomes ~670 lines |
+| `.planning/` artifacts removed from branch | Development artifacts (STATE.md, PLAN.md, SUMMARY.md referencing contributor filesystem paths) do not belong in the repo | LOW | `git rm .planning/STATE.md .planning/quick/` from the PR branch |
+
+### Differentiators (Nice to Have)
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Stacked PR approach for future large features | Autopilot + MoE panels will be large; establish a workflow now | MEDIUM | Tools: `git rebase --update-refs`, Graphite, or manual stacking |
+| PR template enforcing size and scope checklist | Prevents future scope creep in submissions | LOW | Separable from this milestone's fixes |
+
+### Anti-Features
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Squashing everything into one commit before splitting | Loses granular history, makes bisect harder | Use `git cherry-pick` or `git rebase -i` to move commits to new branches |
+| Creating split PRs that target main directly without stacking | If PR A depends on PR B, merging order matters; targeting main with dependent PRs risks broken states | Stack PRs on each other with clear dependency labels in PR body |
+
+### Recommended Split Order
+
+Based on the dependency graph:
+
+```
+PR A: tests + CI (no dependencies)
+  └─> PR B: resolve-model fix (depends on: rebase after #761 lands)
+        └─> PR C: autopilot feature (depends on: config keys from core, auto-discuss from A)
 ```
 
-**Confidence:** HIGH -- The verifier's existing steps (verify_artifacts, verify_wiring, verify_requirements, scan_antipatterns, identify_human_verification) map cleanly to these 3 specialists.
+**Rationale:** Tests+CI can land immediately — it's the least risky and validates the CI setup itself. Resolve-model must coordinate with #761 to avoid conflicts. Autopilot should be last because it depends on the config infrastructure and the resolve-model fix being in main.
 
-### Panel 3: Research Panel
+**Dependency on `model_overrides`:** Remove from PR C (autopilot) unless it has documentation and tests. If needed for autopilot, scope it explicitly with validation.
 
-**Current single agent:** gsd-phase-researcher (produces RESEARCH.md with stack, patterns, pitfalls, code examples)
-
-**Panel specialists:**
-
-| Specialist | Domain | Sections Owned | Output Section |
-|------------|--------|---------------|----------------|
-| **Stack & Ecosystem** | Library recommendations, versions, alternatives, don't-hand-roll, installation commands | Standard Stack, Don't Hand-Roll, State of the Art, Installation | `## Standard Stack` + `## Don't Hand-Roll` + `## State of the Art` |
-| **Architecture & Patterns** | Project structure, design patterns, code examples, recommended organization | Architecture Patterns, Code Examples, Recommended Project Structure | `## Architecture Patterns` + `## Code Examples` |
-| **Pitfalls & Validation** | Common mistakes, pitfalls, gotchas, validation architecture (Nyquist), open questions | Common Pitfalls, Validation Architecture, Open Questions | `## Common Pitfalls` + `## Validation Architecture` + `## Open Questions` |
-
-**Why this partition:** These are genuinely different research domains. Stack research requires checking Context7/official docs for current versions. Architecture research requires understanding design patterns and project structure. Pitfall research requires finding community wisdom about what goes wrong. Different tool usage, different sources, different reasoning.
-
-**Synthesizer behavior:** Merge into single RESEARCH.md. Cross-validate: if Stack specialist recommends library X but Pitfalls specialist warns against library X -- flag conflict, let synthesizer resolve or include both with warning. Add Summary section (synthesized from all 3). Ensure User Constraints section appears first (copied from CONTEXT.md by all specialists independently, deduplicated by synthesizer).
-
-**Output format (backward compatible):**
-```markdown
-# Phase [X]: [Name] - Research
-
-**Researched:** [date]
-**Domain:** [domain]
-**Confidence:** [level]
-**Panel:** Stack + Architecture + Pitfalls
-
-## User Constraints (from CONTEXT.md)
-[Synthesizer deduplicates from all 3 specialists]
-
-## Summary
-[Synthesizer writes this from combined findings]
-
-## Standard Stack
-[From Stack & Ecosystem specialist]
-
-## Architecture Patterns
-[From Architecture & Patterns specialist]
-
-## Don't Hand-Roll
-[From Stack & Ecosystem specialist]
-
-## Common Pitfalls
-[From Pitfalls & Validation specialist]
-
-## Code Examples
-[From Architecture & Patterns specialist]
-
-## State of the Art
-[From Stack & Ecosystem specialist]
-
-## Validation Architecture
-[From Pitfalls & Validation specialist]
-
-## Open Questions
-[From Pitfalls & Validation specialist, augmented by synthesizer]
-
-## Sources
-[Merged from all specialists]
-```
-
-**Confidence:** HIGH -- This is essentially the same pattern as the existing project research pipeline (4 parallel researchers + synthesizer) but applied at phase level.
+---
 
 ## Feature Dependencies
 
 ```
-Per-panel config (config.json) --> Panel enablement check in orchestrators
-  |
-  v
-Specialist agent definitions (9 agents/*.md files)
-  |
-  v
-Panel orchestration logic in workflows (plan-phase.md, execute-phase.md, research-phase.md)
-  |
-  v
-Synthesizer logic (per-panel merge + cross-validation)
-  |
-  v
-Backward-compatible output format (same VERIFICATION.md / RESEARCH.md / checker return)
-  |
-  v
-Degraded-mode fallback (if specialist fails, fall back to single-agent)
+Fix Area 1 (runtime flag for auto-advance)
+    └──modifies──> autopilot.md (remove config-set call)
+    └──modifies──> plan-phase.md (read --auto argument)
+
+Fix Area 2 (input validation for discuss_agents)
+    └──modifies──> auto-discuss.md (validate AGENT_COUNT at read time)
+    └──depends on──> Fix Area 1 (same PR: autopilot feature)
+
+Fix Area 3 (config documentation)
+    └──adds──> README.md (config reference section)
+    └──optionally modifies──> CHANGELOG.md (unreleased section)
+    └──optionally reverts──> core.cjs (remove model_overrides if premature)
+
+Fix Area 4 (PR splitting)
+    └──precedes──> all other fix areas (structure work, not code work)
+    └──depends on──> git branch manipulation (cherry-pick or rebase)
 ```
 
-**Critical dependency:** Specialist agent definitions must be complete before orchestration logic can be tested. The 9 agent .md files are the largest work item and the foundation for everything else.
+### Dependency Notes
 
-**Parallel work streams:**
-- Stream A: Specialist agent definitions (9 files) -- can be done in parallel across panels
-- Stream B: Config schema updates -- independent of agent definitions
-- Stream C: Orchestrator workflow updates -- depends on A being at least partially done
+- **Fix Areas 1 and 2 share a PR (autopilot feature):** They both touch autopilot.md and auto-discuss.md, so they belong together in the same focused PR.
+- **Fix Area 3 can land in any PR:** Documentation for `model_overrides` is independent of the runtime flag fix. If `model_overrides` is removed, Fix Area 3 is just a README addition.
+- **Fix Area 4 must happen first:** The PR split is the prerequisite for all other fixes to be reviewable as separate PRs.
+- **Resolve-model fix (PR #761 coordination):** This is not strictly part of v1.3 code changes but is a PR management task. It should be tracked separately.
 
-## Implementation Complexity Assessment
+---
 
-| Component | Effort | Risk | Notes |
-|-----------|--------|------|-------|
-| 9 specialist agent .md files | HIGH (largest effort) | LOW (well-understood pattern from existing agents) | Each is ~200-400 lines. Total ~2700-3600 lines of prompt engineering. |
-| Config schema updates | LOW | LOW | Add `panel` section to config.json with per-gate enable/disable |
-| plan-phase.md orchestrator update | MEDIUM | MEDIUM | Replace single plan-checker spawn with 3 parallel + synthesizer |
-| execute-phase.md orchestrator update | MEDIUM | MEDIUM | Replace single verifier spawn with 3 parallel + synthesizer |
-| research-phase.md / plan-phase.md research step | MEDIUM | LOW | Already has pattern from project research pipeline |
-| Synthesizer logic (3 synthesizers) | MEDIUM | MEDIUM | Could be inline in orchestrator or separate agents. Inline is simpler. |
-| Cross-validation logic | LOW | LOW | Lightweight post-merge check in synthesizer |
-| Degraded-mode fallback | LOW | LOW | If specialist timeout, run single-agent as fallback |
-| Testing/validation | HIGH | HIGH | Need to verify panel output matches what downstream consumers expect |
+## MVP Definition
 
-## MVP Recommendation
+### Do Now (v1.3 — this milestone)
 
-**Phase 1 (Foundation): Agent Definitions + Config**
-1. Define 9 specialist agent .md files (3 panels x 3 specialists)
-2. Add panel config schema to config.json
-3. No orchestrator changes yet -- agents can be tested standalone
+- [x] Split PR: extract tests+CI, resolve-model, autopilot into separate PRs — **no code required, git branch work**
+- [x] Remove `.planning/` artifacts from autopilot PR branch — **git rm**
+- [x] Fix auto-advance config mutation — **remove 1 line from autopilot.md, add --auto to phase chain call**
+- [x] Add runtime validation for `discuss_agents` in auto-discuss.md — **~5 lines of shell validation**
+- [x] Document `autopilot.*` config keys in README — **~10 lines of docs**
+- [x] Decide: remove `model_overrides` from loadConfig() or add tests+docs
 
-**Phase 2 (Integration): Orchestrator Panel Spawning**
-1. Update plan-phase.md to spawn plan-checker panel (3 parallel + inline synthesis)
-2. Update execute-phase.md to spawn verifier panel (3 parallel + inline synthesis)
-3. Update plan-phase.md research step to spawn research panel (3 parallel + inline synthesis)
-4. Add backward-compatible output format validation
+### Defer to Later
 
-**Phase 3 (Hardening): Cross-Validation + Fallback**
-1. Add cross-validation logic to synthesizers
-2. Add degraded-mode fallback for specialist failures
-3. Add panel-level scoring and drill-down
-4. Test autopilot end-to-end with panels
+- [ ] `config-validate` CLI command — useful but separable from PR review fixes
+- [ ] JSON schema validation on config load — larger refactor, different milestone
+- [ ] Stacked PR tooling setup — process improvement, not a code fix
+- [ ] PR template for scope checklist — governance, not code
 
-**Defer:**
-- Configurable specialist count (1/3/5) -- start with 3 only, add later if needed
-- Specialist-to-specialist communication -- anti-feature, don't build
-- Complex weighting algorithms -- unnecessary for markdown-based outputs
+---
+
+## Feature Prioritization Matrix
+
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Remove config mutation (auto-advance) | HIGH — prevents silent config corruption | LOW — remove 1 line, add --auto arg | P1 |
+| Runtime validation for discuss_agents | HIGH — prevents autopilot spawning wrong agent count | LOW — 5 lines of shell validation | P1 |
+| PR split (tests+CI separate) | HIGH — unblocks reviewer approval | LOW — git branch work only | P1 |
+| Remove .planning/ artifacts | HIGH — removes contributor filesystem path leakage | LOW — git rm | P1 |
+| Document autopilot.* config keys | MEDIUM — discoverability for users | LOW — README addition | P2 |
+| Decide on model_overrides | MEDIUM — cleanliness of codebase | LOW — revert 1 line OR add tests | P2 |
+| config-validate command | LOW — convenience | MEDIUM — new CLI command | P3 |
+| Stacked PR workflow docs | LOW — process hygiene | LOW | P3 |
+
+---
 
 ## Sources
 
-### Primary (HIGH confidence)
-- GSD codebase analysis: agents/gsd-plan-checker.md, agents/gsd-verifier.md, agents/gsd-phase-researcher.md, agents/gsd-research-synthesizer.md
-- GSD workflow analysis: workflows/plan-phase.md, workflows/execute-phase.md, workflows/auto-discuss.md, workflows/new-project.md
-- Google ADK Parallel Agent documentation: https://google.github.io/adk-docs/agents/workflow-agents/parallel-agents/
+### Runtime Flags vs Config Mutation (HIGH confidence)
+- npm config precedence model: [npm-config docs](https://docs.npmjs.com/cli/v6/using-npm/config/) — CLI flags override config files, not the reverse
+- node-config library: [Environment Variables wiki](https://github.com/node-config/node-config/wiki/Environment-Variables) — env vars override config files; config files store persistent preferences
+- GSD codebase: `autopilot.md` lines 47-52 (`ensure_auto_advance` step) — the mutation bug is directly observable
 
-### Secondary (MEDIUM confidence)
-- Kaesberg et al. (2025) "Voting or Consensus? Decision-Making in Multi-Agent Debate" -- https://arxiv.org/abs/2502.19130 -- Systematic evaluation of 7 decision protocols. Key finding: voting better for reasoning, consensus for knowledge, more agents better than more rounds.
-- Qodo "Single-Agent vs Multi-Agent Code Review" -- https://www.qodo.ai/blog/single-agent-vs-multi-agent-code-review/ -- Architecture for domain-partitioned code review with explicit pass/fail signals per specialist.
-- Diffray "Multi-Agent Code Review" -- https://diffray.ai/multi-agent-code-review/ -- 11-specialist architecture with cross-validation and deduplication. 87% fewer false positives.
-- ProofSource "Parallel Sub-Agents in Claude Code" -- https://proofsource.ai/2025/12/parallel-sub-agents-in-claude-code-multiplying-your-development-speed/ -- Claude Code synthesizes subagent findings into coherent responses. Diminishing returns beyond 4-5 parallel agents.
+### Input Validation (HIGH confidence)
+- OWASP Input Validation Cheat Sheet: [owasp.org](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html) — allowlist validation pattern; validate at consumption point
+- GitHub security blog: [Validate all the things](https://github.blog/security/application-security/validate-all-things-input-validation/) — validate inputs before use, not only at write time
+- GSD codebase: `auto-discuss.md` lines 30-32 — `AGENT_COUNT` read with fallback but no validation of the value received
 
-### Tertiary (LOW confidence)
-- General multi-agent system surveys from 2025 (classicinformatics, ioni.ai, neomanex) -- broad patterns, not GSD-specific
-- MoE model architecture literature (HuggingFace, NVIDIA) -- neural network MoE patterns; analogy to agent panels is loose
+### Config Documentation (HIGH confidence)
+- Keep a Changelog: [keepachangelog.com](https://keepachangelog.com/en/1.0.0/) — every new option in `### Added` under `[Unreleased]`
+- Changelog best practices: [getbeamer.com](https://www.getbeamer.com/blog/11-best-practices-for-changelogs) — document breaking changes, categorize by type, link to additional material
+- GSD codebase: `config.cjs` — `autopilot` section added in defaults but no README section or CHANGELOG entry
+
+### PR Splitting (HIGH confidence)
+- Graphite PR size guide: [graphite.com](https://graphite.com/guides/best-practices-managing-pr-size) — under 200 lines ideal, atomic PRs, no mixed change types
+- Stacked pull requests: [michaelagreiler.com](https://www.michaelagreiler.com/stacked-pull-requests/) — stack dependent PRs on each other rather than targeting main directly
+- PR splitting strategies: [awesomecodereviews.com](https://www.awesomecodereviews.com/best-practices/stacked-pull-requests/) — separate refactors, features, tests into distinct PRs
+- GitHub community discussion: [github.com/orgs/community](https://github.com/orgs/community/discussions/181240) — separation of concerns is the primary split criterion
+- Git stacking with --update-refs: [andrewlock.net](https://andrewlock.net/working-with-stacked-branches-in-git-is-easier-with-update-refs/) — native git support for stacked branches without third-party tools
+
+---
+
+*Feature research for: PR review fixes on autopilot mode (get-shit-done v1.3)*
+*Researched: 2026-02-28*
