@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Progress and phase-complete incorrectly route to milestone-complete when ROADMAP defines phases that have no disk directories yet (#689, #754, #757, #709)
+
 ## [1.21.1] - 2026-02-27
 
 ### Added
