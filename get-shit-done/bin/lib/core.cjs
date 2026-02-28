@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { resolvePlanningPaths } = require('./paths.cjs');
 
 // ─── Path helpers ────────────────────────────────────────────────────────────
 
@@ -64,8 +65,9 @@ function safeReadFile(filePath) {
   }
 }
 
-function loadConfig(cwd) {
-  const configPath = path.join(cwd, '.planning', 'config.json');
+function loadConfig(cwd, paths) {
+  const p = paths || resolvePlanningPaths(cwd);
+  const configPath = p.abs.config;
   const defaults = {
     model_profile: 'balanced',
     commit_docs: true,
@@ -247,18 +249,19 @@ function searchPhaseInDir(baseDir, relBase, normalized) {
   }
 }
 
-function findPhaseInternal(cwd, phase) {
+function findPhaseInternal(cwd, phase, paths) {
   if (!phase) return null;
 
-  const phasesDir = path.join(cwd, '.planning', 'phases');
+  const p = paths || resolvePlanningPaths(cwd);
+  const phasesDir = p.abs.phases;
   const normalized = normalizePhaseName(phase);
 
   // Search current phases first
-  const current = searchPhaseInDir(phasesDir, '.planning/phases', normalized);
+  const current = searchPhaseInDir(phasesDir, p.rel.phases, normalized);
   if (current) return current;
 
   // Search archived milestone phases (newest first)
-  const milestonesDir = path.join(cwd, '.planning', 'milestones');
+  const milestonesDir = p.global.abs.milestonesDir;
   if (!fs.existsSync(milestonesDir)) return null;
 
   try {
@@ -284,8 +287,9 @@ function findPhaseInternal(cwd, phase) {
   return null;
 }
 
-function getArchivedPhaseDirs(cwd) {
-  const milestonesDir = path.join(cwd, '.planning', 'milestones');
+function getArchivedPhaseDirs(cwd, paths) {
+  const p = paths || resolvePlanningPaths(cwd);
+  const milestonesDir = p.global.abs.milestonesDir;
   const results = [];
 
   if (!fs.existsSync(milestonesDir)) return results;
@@ -321,9 +325,10 @@ function getArchivedPhaseDirs(cwd) {
 
 // ─── Roadmap & model utilities ────────────────────────────────────────────────
 
-function getRoadmapPhaseInternal(cwd, phaseNum) {
+function getRoadmapPhaseInternal(cwd, phaseNum, paths) {
   if (!phaseNum) return null;
-  const roadmapPath = path.join(cwd, '.planning', 'ROADMAP.md');
+  const p = paths || resolvePlanningPaths(cwd);
+  const roadmapPath = p.abs.roadmap;
   if (!fs.existsSync(roadmapPath)) return null;
 
   try {
@@ -389,9 +394,10 @@ function generateSlugInternal(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-function getMilestoneInfo(cwd) {
+function getMilestoneInfo(cwd, paths) {
   try {
-    const roadmap = fs.readFileSync(path.join(cwd, '.planning', 'ROADMAP.md'), 'utf-8');
+    const p = paths || resolvePlanningPaths(cwd);
+    const roadmap = fs.readFileSync(p.abs.roadmap, 'utf-8');
 
     // First: check for list-format roadmaps using 🚧 (in-progress) marker
     // e.g. "- 🚧 **v2.1 Belgium** — Phases 24-28 (in progress)"
@@ -480,4 +486,5 @@ module.exports = {
   getMilestoneInfo,
   getMilestonePhaseFilter,
   toPosixPath,
+  resolvePlanningPaths,
 };
