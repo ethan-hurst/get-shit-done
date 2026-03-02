@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- **`phase complete` no longer reports `is_last_phase=true` when future phases exist only in ROADMAP.md** — adds a roadmap fallback after the directory scan so phases not yet planned on disk are still detected (#709, #757)
 - **Quality/balanced profiles now deliver Opus subagents** — `resolveModelInternal` previously
   converted `opus` to `inherit`, causing agents to silently run on Sonnet when the parent
   session used the default Sonnet 4.6 model. Opus is now passed directly to Task calls (#695)
